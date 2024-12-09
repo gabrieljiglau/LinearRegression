@@ -5,5 +5,10 @@
 * **The relationships are modelled using linear functions whose unknown parameters are estimated from the data**
 
 
-* **The model is fitted using least squares errors parameter estimation by minimizing the sum of the 
-squares of residuals (a residual being the difference between an observed value and the fitted value provided by a model**
+* **For uni-variate linear regression, the model is fitted using least squares errors by minimizing the sum of the 
+squares of residuals (a residual being the difference between an observed value and the fitted value provided by the
+model)**
+
+
+* **For multi-variate linear regression, the objective is to minimize a global error (mean squared error)
+by using gradient descent**

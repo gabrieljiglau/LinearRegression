@@ -35,5 +35,18 @@ class Dataset:
             return
         self._output_vars = new_vars
 
-    def is_dataset_consistent(self):
+    def is_linear_dataset_consistent(self):
         return True if len(self.input_vars) == len(self.output_vars) else False
+
+    def is_multivariate_dataset_consistent(self):
+        if self.input_vars.size == 0 or self.output_vars == 0:
+            return False
+
+        if self.input_vars.shape[0] != self.output_vars.shape[0]:
+            return False
+
+        # 2d array
+        if len(self.input_vars.shape) != 2:
+            return False
+
+        return True
