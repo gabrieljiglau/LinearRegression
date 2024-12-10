@@ -6,20 +6,19 @@ from src.building_blocks import Dataset
 
 
 def calculate_gradient(x, y, weights, current_index):
-    x_transpose = np.dot(np.transpose(x), -2)
-    x_w = np.dot(x[current_index], weights[current_index])
+    y_pred = np.dot(x, weights)
+    errors = y_pred - y
+    gradient = -2 * np.dot(x[:, current_index], errors)
+    return gradient
 
-    return np.dot(x_transpose, x_w)
 
 def calculate_error(y_pred, y_true):
+    errors = y_pred - y_true
+    mse = np.mean(errors ** 2)
+    return mse
 
-    err = []
-    for i in range(y_pred.shape[0]):
-        err.append(y_pred - y_true)
-    return err
 
 def plot_regression_line(dataset: Dataset, y_pred, x_name, y_name):
-
     x_in = dataset.input_vars
     y_out = dataset.output_vars
 
@@ -37,10 +36,11 @@ def plot_regression_line(dataset: Dataset, y_pred, x_name, y_name):
     plt.grid(True)
     plt.show()
 
-def import_linear_dataset(dataset_name) -> Dataset | None:
 
+def import_dataset(dataset_name, is_modelled_linearly: bool = True) -> Dataset | None:
     """
 
+    :param is_modelled_linearly: boolean flag to check whether the dataset should be used for linear regression
     :param dataset_name: dataset in csv format with X being the first column, Y_target the second
     :return: the prepared for inference dataset or None if the format isn't proper
     """
@@ -49,15 +49,32 @@ def import_linear_dataset(dataset_name) -> Dataset | None:
     datasets_path = os.path.join(current_path, '..', 'datasets')
     csv_file = os.path.join(datasets_path, dataset_name)
 
-    df = pd.read_csv(csv_file)
-
-    if not len(df.columns) == 2:
-        print("The dataset does not support linear regression")
+    try:
+        df = pd.read_csv(csv_file)
+    except FileNotFoundError:
+        print(f"Error: The file '{dataset_name}' was not found in the 'datasets' folder.")
+        return None
+    except pd.errors.EmptyDataError:
+        print(f"Error: The file '{dataset_name}' is empty or malformed.")
         return None
 
-    x = df[df.columns[0]]
-    y = df[df.columns[1]]
-    return Dataset(x, y)
+    if is_modelled_linearly:
+        if not len(df.columns) == 2:
+            print("The dataset does not support linear regression")
+            return None
+
+        x = df[df.columns[0]]
+        y = df[df.columns[1]]
+        return Dataset(x, y)
+    else:
+        if len(df.columns) < 3:
+            print("The dataset does not have enough columns for linear regression.")
+            return None
+
+        x = df[df.columns[0:-1]]  # all columns except the last one
+        y = df[df.columns[-1]]  # the last column is the target
+
+        return Dataset(x, y)
 
 
 def calculate_linear_correlation(dataset: Dataset, beta) -> float:
@@ -72,7 +89,7 @@ def calculate_linear_correlation(dataset: Dataset, beta) -> float:
 
     x_std = np.std(x)
     y_std = np.std(y)
-    r = beta * x_std/y_std
+    r = beta * x_std / y_std
     r2 = np.power(r, 2)
 
     if r2 > 0.65:
@@ -84,14 +101,14 @@ def calculate_linear_correlation(dataset: Dataset, beta) -> float:
     print(f"pearson_coefficient = {r2}")
     return r2
 
-def calculate_slope(observations, xy_sum, x_sum, y_sum, x_squared_sum):
 
+def calculate_slope(observations, xy_sum, x_sum, y_sum, x_squared_sum):
     numerator = observations * xy_sum - x_sum * y_sum
     denominator = observations * x_squared_sum - np.power(x_sum, 2)
 
     return numerator / denominator
 
-def calculate_intercept(observations, y_sum, beta, x_sum):
 
+def calculate_intercept(observations, y_sum, beta, x_sum):
     numerator = y_sum - beta * x_sum
     return numerator / observations
