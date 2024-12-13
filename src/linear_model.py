@@ -6,7 +6,7 @@ from src.utils import calculate_slope, calculate_intercept, plot_regression_line
 
 class MultiVariateRegressor:
 
-    def __init__(self, data: Dataset, learning_rate=0.5, epochs=3, batch_size=32):
+    def __init__(self, data: Dataset, learning_rate=0.001, epochs=3, batch_size=1):
 
         if data is not None:
             self.data = data
@@ -28,7 +28,10 @@ class MultiVariateRegressor:
         """
         x = self.data.input_vars
         y = self.data.output_vars
-        x_augmented = np.c_[np.ones(x.shape[0]), x]  # Add 1s for the bias term (w_0)
+
+        m = y.shape[0]
+
+        x_augmented = np.c_[np.ones(x.shape[0]), x]  # add 1s for the bias term (w_0)
 
         for epoch in range(self.epochs):
             for batch_start in range(0, len(x_augmented), self.batch_size):
@@ -37,14 +40,14 @@ class MultiVariateRegressor:
 
                 gradients = np.zeros(len(self.weights))
                 for i in range(len(self.weights)):
-                    gradients[i] = calculate_gradient(batch_x, batch_y, self.weights, i)
+                    gradients[i] = (1/m) * calculate_gradient(batch_x, batch_y, self.weights, i)
 
-                self.weights -= self.learning_rate * gradients
+                self.weights += self.learning_rate * gradients
 
             # after each epoch, calculate and print the error (MSE)
             y_out = np.dot(x_augmented, self.weights)
             error = calculate_error(y_out, y)
-            print(f"Epoch {epoch + 1}, Current error: {error}")
+            # print(f"Epoch {epoch + 1}, Current error: {error}")
 
         return self.weights
 
@@ -115,12 +118,13 @@ class LinearRegressor:
 
 if __name__ == '__main__':
 
-    house_dataset = import_dataset('house_prices.csv', False)
+    house_dataset = import_dataset('real_estate_data.csv', False)
     model = MultiVariateRegressor(house_dataset)
 
-    model.fit()
+    weights = model.fit()
+    print(f"Learned weights = {weights}")
+    new_house = [120.81,1,7.42]
 
-    new_house = [1268, 5, 2, 10]
     print(f"Predicted price for {new_house} is {model.predict(new_house)}")
 
     """
@@ -155,4 +159,3 @@ if __name__ == '__main__':
     prediction = model.predict(x_new)
     print(f"The weather prediction for the next day, at 12:00 is {prediction}")
     """
-

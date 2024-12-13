@@ -6,9 +6,13 @@ from src.building_blocks import Dataset
 
 
 def calculate_gradient(x, y, weights, current_index):
+    """
+    Calculates the gradient for a specific weight (current_index) based on the input features (x)
+    and the target outputs (y).
+    """
     y_pred = np.dot(x, weights)
     errors = y_pred - y
-    gradient = -2 * np.dot(x[:, current_index], errors)
+    gradient = -2 * np.dot(x[:, current_index], errors) / len(y)
     return gradient
 
 
