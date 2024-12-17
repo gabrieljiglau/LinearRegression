@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     plot_regression_line(temperature_dataset, y_pred, "observed days", "temperature(C)")
 
-    x_new = 8
+    x_new = 11
     prediction = model.predict(x_new)
     print(f"The weather prediction for the next day, at 12:00 is {prediction}")
     """
